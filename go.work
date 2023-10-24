@@ -1,9 +1,18 @@
 go 1.21.3
 
 use (
-	.
 	./develop/dev01
 	./develop/dev02
+	// ./develop/dev03
+	// ./develop/dev04
+	// ./develop/dev05
+	// ./develop/dev06
+	// ./develop/dev07
+	// ./develop/dev08
+	// ./develop/dev09
+	// ./develop/dev10
+	// ./develop/dev11
+
 	./pattern/01_facade
 	./pattern/02_builder
 	./pattern/03_visitor

@@ -1,4 +1,4 @@
-module github.com/erikfrish/WB_L2/develop/dev01
+module dev01
 
 go 1.21.3
 

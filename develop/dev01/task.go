@@ -27,7 +27,7 @@ import (
 	"os"
 	"time"
 
-	wt "github.com/erikfrish/WB_L2/develop/dev01/what_time"
+	wt "dev01/what_time"
 )
 
 func main() {
