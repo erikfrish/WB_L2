@@ -3,7 +3,7 @@ go 1.21.3
 use (
 	./develop/dev01
 	./develop/dev02
-	// ./develop/dev03
+	./develop/dev03
 	// ./develop/dev04
 	// ./develop/dev05
 	// ./develop/dev06
