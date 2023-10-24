@@ -1,6 +1,15 @@
 go 1.21.3
 
 use (
+	.
 	./develop/dev01
 	./develop/dev02
+	./pattern/01_facade
+	./pattern/02_builder
+	./pattern/03_visitor
+	./pattern/04_command
+	./pattern/05_chain_of_resp
+	./pattern/06_factory_method
+	./pattern/07_strategy
+	./pattern/08_state
 )
