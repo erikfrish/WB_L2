@@ -25,6 +25,32 @@ package main
 Программа должна проходить все тесты. Код должен проходить проверки go vet и golint.
 */
 
+import (
+	"dev03/sorting"
+	"flag"
+	"fmt"
+)
+
 func main() {
+	options := make(map[string]*bool)
+	k := flag.Int("k", 0, "указание колонки для сортировки")
+	options["n"] = flag.Bool("n", false, "сортировать по числовому значению")
+	options["r"] = flag.Bool("r", false, "сортировать в обратном порядке")
+	options["u"] = flag.Bool("u", false, "не выводить повторяющиеся строки")
+
+	options["M"] = flag.Bool("M", false, "сортировать по названию месяца")
+	options["b"] = flag.Bool("b", false, "игнорировать хвостовые пробелы")
+	options["c"] = flag.Bool("c", false, "проверять отсортированы ли данные")
+	options["h"] = flag.Bool("h", false, "сортировать по числовому значению с учётом суффиксов")
+
+	toSave := flag.String("to", "sorted.txt", "сортировать по числовому значению с учётом суффиксов")
+
+	flag.Parse()
+	filename := flag.Arg(0)
+	if filename != "" {
+		sorting.NewSorter(options, k).Run(filename, toSave)
+	} else {
+		fmt.Println("Пожалуйста, введите путь к файлу для сортировки!")
+	}
 
 }
