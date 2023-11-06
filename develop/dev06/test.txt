@@ -1,0 +1,8 @@
+1	co1	co2	co3	co4
+2	co1	co2	co3	co4
+3	co1	co2	co3	co4
+4	co1	co2	co3	co4	co5
+5	co1	co2	co3	co4
+6	co1	co2	co3	co4
+7	co1	co2	co3	co4
+8 with spaces
