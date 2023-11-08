@@ -33,6 +33,51 @@ start := time.Now()
 fmt.Printf(“fone after %v”, time.Since(start))
 */
 
+import (
+	"fmt"
+	"time"
+)
+
 func main() {
 
+	done1 := make(chan any, 0)
+	done2 := make(chan any, 0)
+	done3 := make(chan any, 0)
+	done := UniteDoneChannels(done1, done2, done3)
+
+	go func(ch chan any) {
+		fmt.Println("routine1")
+		time.Sleep(time.Second * 4)
+		ch <- "done1"
+	}(done1)
+
+	go func(ch chan any) {
+		fmt.Println("routine2")
+		time.Sleep(time.Second * 50)
+		ch <- "done2"
+	}(done2)
+
+	go func(ch chan any) {
+		fmt.Println("routine3")
+		time.Sleep(time.Second * 2)
+		ch <- "done3"
+	}(done3)
+
+	fmt.Println(<-done)
+}
+
+func UniteDoneChannels(chans ...chan any) chan any {
+	res := make(chan any, 0)
+	// wg := sync.WaitGroup{}
+	for _, ch := range chans {
+		// wg.Add(1)
+		go func(ch <-chan interface{}) {
+			for val := range ch {
+				res <- val
+			}
+			// wg.Done()
+		}(ch)
+	}
+	// wg.Wait()
+	return res
 }
