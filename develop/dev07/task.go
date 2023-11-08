@@ -68,16 +68,12 @@ func main() {
 
 func UniteDoneChannels(chans ...chan any) chan any {
 	res := make(chan any, 0)
-	// wg := sync.WaitGroup{}
 	for _, ch := range chans {
-		// wg.Add(1)
 		go func(ch <-chan interface{}) {
 			for val := range ch {
 				res <- val
 			}
-			// wg.Done()
 		}(ch)
 	}
-	// wg.Wait()
 	return res
 }
