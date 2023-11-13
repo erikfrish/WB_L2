@@ -10,6 +10,14 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}"
+        },
+        {
+            "name": "dev09",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${fileDirname}",
+            "args": ["--mirror", "https://habr.com/ru/articles/489862/"]
         }
     ]
 }
