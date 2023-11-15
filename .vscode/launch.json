@@ -16,8 +16,17 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}",
+            "program": "${workspaceFolder}/develop/dev09/task.go",
             "args": ["--mirror", "https://habr.com/ru/articles/489862/"]
+        },
+        {
+            "name": "dev10",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/develop/dev10/task.go",
+            "args": ["--timeout=\"2s\"", "localhost", "4242"],
+            "console": "integratedTerminal"
         }
     ]
 }

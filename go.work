@@ -10,8 +10,8 @@ use (
 	./develop/dev07
 	./develop/dev08
 	./develop/dev09
-	// ./develop/dev10
-	// ./develop/dev11
+	./develop/dev10
+	./develop/dev11
 
 	./pattern/01_facade
 	./pattern/02_builder
