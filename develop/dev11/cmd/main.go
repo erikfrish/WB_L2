@@ -57,7 +57,8 @@ import (
 func main() {
 	cfg := config.MustLoad()
 	log := setupLogger(cfg.Env)
-	log.Info("starting url-shortener", slog.String("env", cfg.Env))
+	log.Info("starting dev11 on ", slog.String("address", cfg.Address))
+	log.Info("", slog.String("env", cfg.Env))
 	log.Debug("debug messages are enabled")
 
 	storage, err := sqlite.New(cfg.StoragePath)

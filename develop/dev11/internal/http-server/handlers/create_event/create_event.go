@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"time"
+	"regexp"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -19,7 +19,7 @@ type Response struct {
 }
 
 type EventCreator interface {
-	CreateEvent(event_date time.Time, event_name, event_description string) (int64, error)
+	CreateEvent(event_date, event_name, event_description string) (int64, error)
 }
 
 func New(log *slog.Logger, ec EventCreator) http.HandlerFunc {
@@ -33,20 +33,41 @@ func New(log *slog.Logger, ec EventCreator) http.HandlerFunc {
 			return
 		} else {
 			eve := new(strct.Event)
-			if err := json.NewDecoder(r.Body).Decode(eve); err != nil {
-				log.Error("failed to decode request body", sl.Err(err))
-				http.Error(w, "failed to decode request", http.StatusBadRequest)
+
+			if err := r.ParseForm(); err != nil {
+				http.Error(w, "Error parsing form", http.StatusBadRequest)
 				return
 			}
 
-			if err := validator.New().Struct(eve); err != nil {
+			form := r.Form
+			eve.Date = form.Get("date")
+			eve.Name = form.Get("name")
+			eve.Desc = form.Get("desc")
+			if len(eve.Date) == 0 || len(eve.Name) == 0 {
+				log.Error("you have to specify both name and date of event")
+				http.Error(w, "you have to specify both name and date of event", http.StatusInternalServerError)
+				return
+			}
+
+			validate := validator.New()
+			err := validate.RegisterValidation("date", func(fl validator.FieldLevel) bool {
+				field := fl.Field().String()
+				match, _ := regexp.MatchString(`[0-9]{4}-[0-9]{2}-[0-9]{2}`, field)
+				return match
+			})
+			if err != nil {
+				log.Error("can't register validation func", sl.Err(err))
+				http.Error(w, fmt.Sprintf("can't register validation func: %s", err), http.StatusInternalServerError)
+				return
+			}
+			if err := validate.Struct(eve); err != nil {
 				validateErr := err.(validator.ValidationErrors)
 				log.Error("invalid request", sl.Err(err))
 				http.Error(w, fmt.Sprintf("request validation error: %s", validateErr), http.StatusBadRequest)
 				return
 			}
 
-			_, err := ec.CreateEvent(eve.Date, eve.Name, eve.Description)
+			_, err = ec.CreateEvent(eve.Date, eve.Name, eve.Desc)
 			if err != nil {
 				log.Error("failed to create event", sl.Err(err))
 				http.Error(w, "failed to create event", http.StatusInternalServerError)

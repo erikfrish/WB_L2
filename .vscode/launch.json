@@ -27,6 +27,16 @@
             "program": "${workspaceFolder}/develop/dev10/task.go",
             "args": ["--timeout=\"2s\"", "localhost", "4242"],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "dev11",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/develop/dev11/cmd/main.go",
+            "cwd": "${workspaceFolder}/develop/dev11/",
+            "args": [""],
+            "console": "integratedTerminal"
         }
     ]
 }

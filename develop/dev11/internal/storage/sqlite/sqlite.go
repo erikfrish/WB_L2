@@ -42,14 +42,14 @@ func New(storagePath string) (*Storage, error) {
 	return &Storage{db: db}, nil
 }
 
-func (s *Storage) CreateEvent(event_date time.Time, event_name, event_description string) (int64, error) {
+func (s *Storage) CreateEvent(event_date, event_name, event_description string) (int64, error) {
 	const op = "storage.sqlite.CreateEvent"
 
 	stmt, err := s.db.Prepare("INSERT INTO events(date, name, description) VALUES(?, ?, ?)")
 	if err != nil {
 		return 0, fmt.Errorf("%s: prepare statement %w", op, err)
 	}
-	res, err := stmt.Exec(event_date.Format(time.DateOnly), event_name, event_description)
+	res, err := stmt.Exec(event_date, event_name, event_description)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -60,14 +60,14 @@ func (s *Storage) CreateEvent(event_date time.Time, event_name, event_descriptio
 	return id, nil
 }
 
-func (s *Storage) UpdateEvent(event_date time.Time, event_name, event_description string) (int64, error) {
+func (s *Storage) UpdateEvent(event_date, event_name, event_description string) (int64, error) {
 	const op = "storage.sqlite.UpdateEvent"
 
 	stmt, err := s.db.Prepare("UPDATE events SET description=? WHERE date=? AND name=?")
 	if err != nil {
 		return 0, fmt.Errorf("%s: prepare statement %w", op, err)
 	}
-	res, err := stmt.Exec(event_description, event_date.Format(time.DateOnly), event_name)
+	res, err := stmt.Exec(event_description, event_date, event_name)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -77,14 +77,14 @@ func (s *Storage) UpdateEvent(event_date time.Time, event_name, event_descriptio
 	}
 	return ra, nil
 }
-func (s *Storage) DeleteEvent(event_date time.Time, event_name string) (int64, error) {
+func (s *Storage) DeleteEvent(event_date, event_name string) (int64, error) {
 	const op = "storage.sqlite.DeleteEvent"
 
-	stmt, err := s.db.Prepare("DELETE FROM events WHERE WHERE date=? AND name=?")
+	stmt, err := s.db.Prepare(`DELETE FROM events WHERE date=? AND name=?`)
 	if err != nil {
 		return 0, fmt.Errorf("%s: prepare statement %w", op, err)
 	}
-	res, err := stmt.Exec(event_date.Format(time.DateOnly), event_name)
+	res, err := stmt.Exec(event_date, event_name)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -95,16 +95,21 @@ func (s *Storage) DeleteEvent(event_date time.Time, event_name string) (int64, e
 	return ra, nil
 }
 
-func (s *Storage) GetForDay(event_date time.Time) ([]strct.Event, error) {
+func (s *Storage) GetForDay(event_date string) ([]strct.Event, error) {
 	const op = "storage.sqlite.GetForDay"
 	var result = make([]strct.Event, 0)
-	row, err := s.db.Query("SELECT * FROM events where date=?", event_date.Format(time.DateOnly))
+	_, err := time.Parse(time.DateOnly, event_date)
+	if err != nil {
+		return []strct.Event{}, fmt.Errorf(`%s:error parsing date, please use "2000-10-10" formatting %w`, op, err)
+	}
+	row, err := s.db.Query(`SELECT * FROM events where date=?`, event_date)
 	if err != nil {
 		return []strct.Event{}, fmt.Errorf("%s: prepare statement %w", op, err)
 	}
 	for row.Next() { // Iterate and fetch the records from result cursor
 		item := strct.Event{}
-		err := row.Scan(&item.Date, &item.Name, &item.Description)
+		var id int
+		err := row.Scan(&id, &item.Date, &item.Name, &item.Desc)
 		if err != nil {
 			return []strct.Event{}, fmt.Errorf("%s: scanning row %w", op, err)
 		}
@@ -112,18 +117,24 @@ func (s *Storage) GetForDay(event_date time.Time) ([]strct.Event, error) {
 	}
 	return result, nil
 }
-func (s *Storage) GetForWeek(event_date time.Time) ([]strct.Event, error) {
+func (s *Storage) GetForWeek(event_date string) ([]strct.Event, error) {
 	const op = "storage.sqlite.GetForWeek"
 	var result = make([]strct.Event, 0)
 	for today := 0; today < 7; today++ {
-		event_date = event_date.Add(time.Hour * 24)
-		row, err := s.db.Query("SELECT * FROM events where date=?", event_date.Format(time.DateOnly))
+		ti, err := time.Parse(time.DateOnly, event_date)
+		if err != nil {
+			return []strct.Event{}, fmt.Errorf(`%s:error parsing date, please use "2000-10-10" formatting %w`, op, err)
+		}
+		ti = ti.Add(time.Hour * 24)
+		event_date = ti.Format(time.DateOnly)
+		row, err := s.db.Query(`SELECT * FROM events where date=?`, event_date)
 		if err != nil {
 			return []strct.Event{}, fmt.Errorf("%s: prepare statement %w", op, err)
 		}
 		for row.Next() {
 			item := strct.Event{}
-			err := row.Scan(&item.Date, &item.Name, &item.Description)
+			var id int
+			err := row.Scan(&id, &item.Date, &item.Name, &item.Desc)
 			if err != nil {
 				return []strct.Event{}, fmt.Errorf("%s: scanning row %w", op, err)
 			}
@@ -132,18 +143,24 @@ func (s *Storage) GetForWeek(event_date time.Time) ([]strct.Event, error) {
 	}
 	return result, nil
 }
-func (s *Storage) GetForMonth(event_date time.Time) ([]strct.Event, error) {
+func (s *Storage) GetForMonth(event_date string) ([]strct.Event, error) {
 	const op = "storage.sqlite.GetForMonth"
 	var result = make([]strct.Event, 0)
 	for today := 0; today < 31; today++ {
-		event_date = event_date.Add(time.Hour * 24)
-		row, err := s.db.Query("SELECT * FROM events where date=?", event_date.Format(time.DateOnly))
+		ti, err := time.Parse(time.DateOnly, event_date)
+		if err != nil {
+			return []strct.Event{}, fmt.Errorf(`%s:error parsing date, please use "2000-10-10" formatting %w`, op, err)
+		}
+		ti = ti.Add(time.Hour * 24)
+		event_date = ti.Format(time.DateOnly)
+		row, err := s.db.Query(`SELECT * FROM events where date=?`, event_date)
 		if err != nil {
 			return []strct.Event{}, fmt.Errorf("%s: prepare statement %w", op, err)
 		}
 		for row.Next() {
 			item := strct.Event{}
-			err := row.Scan(&item.Date, &item.Name, &item.Description)
+			var id int
+			err := row.Scan(&id, &item.Date, &item.Name, &item.Desc)
 			if err != nil {
 				return []strct.Event{}, fmt.Errorf("%s: scanning row %w", op, err)
 			}

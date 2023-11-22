@@ -9,7 +9,6 @@ import (
 	// "fmt"
 	"log/slog"
 	"net/http"
-	"time"
 	// "github.com/go-playground/validator/v10"
 )
 
@@ -19,9 +18,9 @@ type Response struct {
 }
 
 type EventGetter interface {
-	GetForDay(date time.Time) ([]strct.Event, error)
-	GetForWeek(date time.Time) ([]strct.Event, error)
-	GetForMonth(date time.Time) ([]strct.Event, error)
+	GetForDay(date string) ([]strct.Event, error)
+	GetForWeek(date string) ([]strct.Event, error)
+	GetForMonth(date string) ([]strct.Event, error)
 }
 
 func NewForDay(log *slog.Logger, eg EventGetter) http.HandlerFunc {
@@ -34,21 +33,13 @@ func NewForDay(log *slog.Logger, eg EventGetter) http.HandlerFunc {
 			http.Error(w, "invalid http method, need GET", http.StatusBadRequest)
 			return
 		} else {
-			eve := new(strct.Event)
 			que := r.URL.Query()
 			result := make([][]strct.Event, 0, 1)
 			for _, date := range que["date"] {
-				var err error
-				eve.Date, err = time.Parse(time.DateOnly, date)
+				eves, err := eg.GetForDay(date)
 				if err != nil {
-					log.Error(`error parsing date, please use "2000-10-10" formatting`)
-					http.Error(w, `error parsing date, please use "2000-10-10" formatting`, http.StatusBadRequest)
-					return
-				}
-				eves, err := eg.GetForDay(eve.Date)
-				if err != nil {
-					log.Error("failed to create event", sl.Err(err))
-					http.Error(w, "failed to create event", http.StatusInternalServerError)
+					log.Error("failed to get events for day", sl.Err(err))
+					http.Error(w, "failed to get events for day", http.StatusInternalServerError)
 					return
 				}
 				result = append(result, eves)
@@ -75,21 +66,13 @@ func NewForWeek(log *slog.Logger, eg EventGetter) http.HandlerFunc {
 			http.Error(w, "invalid http method, need GET", http.StatusBadRequest)
 			return
 		} else {
-			eve := new(strct.Event)
 			que := r.URL.Query()
 			result := make([][]strct.Event, 0, 1)
 			for _, date := range que["date"] {
-				var err error
-				eve.Date, err = time.Parse(time.DateOnly, date)
+				eves, err := eg.GetForWeek(date)
 				if err != nil {
-					log.Error(`error parsing date, please use "2000-10-10" formatting`)
-					http.Error(w, `error parsing date, please use "2000-10-10" formatting`, http.StatusBadRequest)
-					return
-				}
-				eves, err := eg.GetForWeek(eve.Date)
-				if err != nil {
-					log.Error("failed to create event", sl.Err(err))
-					http.Error(w, "failed to create event", http.StatusInternalServerError)
+					log.Error("failed to get events for week", sl.Err(err))
+					http.Error(w, "failed to get events for week", http.StatusInternalServerError)
 					return
 				}
 				result = append(result, eves)
@@ -115,21 +98,13 @@ func NewForMonth(log *slog.Logger, eg EventGetter) http.HandlerFunc {
 			http.Error(w, "invalid http method, need GET", http.StatusBadRequest)
 			return
 		} else {
-			eve := new(strct.Event)
 			que := r.URL.Query()
 			result := make([][]strct.Event, 0, 1)
 			for _, date := range que["date"] {
-				var err error
-				eve.Date, err = time.Parse(time.DateOnly, date)
+				eves, err := eg.GetForMonth(date)
 				if err != nil {
-					log.Error(`error parsing date, please use "2000-10-10" formatting`)
-					http.Error(w, `error parsing date, please use "2000-10-10" formatting`, http.StatusBadRequest)
-					return
-				}
-				eves, err := eg.GetForMonth(eve.Date)
-				if err != nil {
-					log.Error("failed to create event", sl.Err(err))
-					http.Error(w, "failed to create event", http.StatusInternalServerError)
+					log.Error("failed to get events for month", sl.Err(err))
+					http.Error(w, "failed to get events for month", http.StatusInternalServerError)
 					return
 				}
 				result = append(result, eves)
